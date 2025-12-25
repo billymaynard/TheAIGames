@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The AI Games</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__content">
+      <h1>The AI Games</h1>
+      <p>Challenge our bots across classic board games.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="cards">
+      <article class="card" data-target="tic-tac-toe">
+        <h2>Tic Tac Toe</h2>
+        <p>Take on the AI or invite a friend.</p>
+        <button class="primary">Play</button>
+      </article>
+      <article class="card" data-target="connect4">
+        <h2>Connect 4</h2>
+        <p>Outsmart the CPU in this vertical showdown.</p>
+        <button class="primary">Play</button>
+      </article>
+      <article class="card card--disabled">
+        <h2>Chess</h2>
+        <p>Coming soon — advanced AI strategy.</p>
+        <button class="secondary" disabled>Coming Soon</button>
+      </article>
+    </section>
+
+    <section id="views">
+      <div class="view" data-view="home">
+        <p class="muted">Select a game to begin.</p>
+      </div>
+
+      <div class="view hidden" data-view="tic-tac-toe">
+        <div class="crumbs">
+          <button class="ghost back-home">← Back</button>
+        </div>
+        <h2>Tic Tac Toe</h2>
+        <div class="options">
+          <button class="primary" data-action="solo">Solo Play</button>
+          <button class="secondary" disabled>Play with a Friend (Coming Soon)</button>
+        </div>
+        <div class="options hidden" data-section="difficulty">
+          <p>Select difficulty:</p>
+          <div class="levels">
+            <button class="chip" data-level="easy">Easy</button>
+            <button class="chip" data-level="medium">Medium</button>
+            <button class="chip" data-level="hard">Hard</button>
+          </div>
+        </div>
+        <div class="board-container hidden" data-section="board">
+          <div class="status" data-game="ttt-status"></div>
+          <div class="grid" id="ttt-grid"></div>
+          <button class="ghost" data-game="ttt-reset">Restart</button>
+        </div>
+      </div>
+
+      <div class="view hidden" data-view="connect4">
+        <div class="crumbs">
+          <button class="ghost back-home">← Back</button>
+        </div>
+        <h2>Connect 4</h2>
+        <div class="options">
+          <p>Select difficulty:</p>
+          <div class="levels">
+            <button class="chip" data-c4-level="easy">Easy</button>
+            <button class="chip" data-c4-level="medium">Medium</button>
+            <button class="chip" data-c4-level="hard">Hard</button>
+          </div>
+        </div>
+        <div class="board-container hidden" data-section="c4-board">
+          <div class="status" data-game="c4-status"></div>
+          <div class="c4-grid" id="c4-grid"></div>
+          <button class="ghost" data-game="c4-reset">Restart</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>AI-powered classics, built for the web.</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
