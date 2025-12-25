@@ -17,8 +17,19 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  const sanitizedPath = path.normalize(req.url.split('?')[0]).replace(/^(\.\.[/\\])+/, '');
-  const filePath = path.join(publicDir, sanitizedPath === '/' ? 'index.html' : sanitizedPath);
+  const rawPath = req.url.split('?')[0];
+  const normalized = path.normalize(rawPath).replace(/^(\.\.[/\\])+/, '');
+  const trimmed = normalized.replace(/^[/\\]+/, '');
+  const target = trimmed === '' ? 'index.html' : trimmed;
+  const filePath = path.join(publicDir, target);
+  const resolvedBase = path.resolve(publicDir);
+  const resolvedPath = path.resolve(filePath);
+
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
+  }
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
