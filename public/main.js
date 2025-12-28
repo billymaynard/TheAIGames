@@ -7,13 +7,13 @@ const tttBoardSection = document.querySelector('[data-section="board"]');
 const tttGrid = document.getElementById('ttt-grid');
 const tttStatus = document.querySelector('[data-game="ttt-status"]');
 const tttReset = document.querySelector('[data-game="ttt-reset"]');
-let tttLevel = 'easy';
+let tttLevel = 'normal';
 
 const c4BoardSection = document.querySelector('[data-section="c4-board"]');
 const c4Grid = document.getElementById('c4-grid');
 const c4Status = document.querySelector('[data-game="c4-status"]');
 const c4Reset = document.querySelector('[data-game="c4-reset"]');
-let c4Level = 'easy';
+let c4Level = 'childs-play';
 
 function showView(target) {
   views.forEach((v) => {
@@ -58,12 +58,28 @@ function renderTttBoard() {
 }
 
 function handleTttMove(index) {
-  if (tttState.locked || tttState.board[index]) return;
+  if (tttState.locked || tttState.board[index] || tttState.current !== 'X') return;
   tttState.board[index] = 'X';
   tttState.current = 'O';
   renderTttBoard();
   if (checkTttEnd()) return;
+  queueTttAiMove();
+}
+
+function tttLevelDepth(level) {
+  switch (level) {
+    case 'normal':
+      return 4;
+    case 'hard':
+      return 9;
+    default:
+      return 4;
+  }
+}
+
+function queueTttAiMove() {
   tttState.locked = true;
+  updateTttStatus();
   setTimeout(() => {
     const aiMove = minimaxTtt(tttState.board, 'O', tttLevelDepth(tttLevel)).index;
     if (aiMove !== undefined) {
@@ -74,19 +90,6 @@ function handleTttMove(index) {
     renderTttBoard();
     checkTttEnd();
   }, 200);
-}
-
-function tttLevelDepth(level) {
-  switch (level) {
-    case 'easy':
-      return 2;
-    case 'medium':
-      return 6;
-    case 'hard':
-      return 9;
-    default:
-      return 4;
-  }
 }
 
 function minimaxTtt(board, player, depth) {
@@ -147,9 +150,8 @@ function checkTttEnd() {
 }
 
 function updateTttStatus() {
-  if (!tttWinner(tttState.board)) {
-    tttStatus.textContent = `Your turn (${tttState.current})`;
-  }
+  if (tttWinner(tttState.board)) return;
+  tttStatus.textContent = tttState.current === 'X' ? 'Your turn (X)' : 'AI thinking...';
 }
 
 document.querySelector('[data-action="solo"]').addEventListener('click', () => {
@@ -170,9 +172,13 @@ tttReset.addEventListener('click', resetTtt);
 
 function resetTtt() {
   tttState.board = Array(9).fill(null);
-  tttState.current = 'X';
   tttState.locked = false;
+  const playerStarts = Math.random() < 0.5;
+  tttState.current = playerStarts ? 'X' : 'O';
   renderTttBoard();
+  if (!playerStarts) {
+    queueTttAiMove();
+  }
 }
 
 // Connect 4 logic
@@ -199,18 +205,12 @@ function renderC4() {
 }
 
 function handleC4Move(col) {
-  if (c4Locked) return;
+  if (c4Locked || c4Current !== 1) return;
   if (!dropPiece(col, 1)) return;
+  c4Current = 2;
   renderC4();
   if (checkC4End()) return;
-  c4Locked = true;
-  setTimeout(() => {
-    const aiMove = bestC4Move(c4Board, depthForLevel(c4Level));
-    dropPiece(aiMove, 2);
-    renderC4();
-    c4Locked = false;
-    checkC4End();
-  }, 250);
+  queueC4AiMove();
 }
 
 function dropPiece(col, player) {
@@ -225,15 +225,31 @@ function dropPiece(col, player) {
 
 function depthForLevel(level) {
   switch (level) {
-    case 'easy':
+    case 'childs-play':
       return 2;
-    case 'medium':
+    case 'initiate':
       return 4;
-    case 'hard':
+    case 'advanced':
       return 5;
+    case 'seasoned':
+      return 8;
     default:
       return 3;
   }
+}
+
+function queueC4AiMove() {
+  c4Locked = true;
+  updateC4Status();
+  setTimeout(() => {
+    const aiMove = bestC4Move(c4Board, depthForLevel(c4Level));
+    dropPiece(aiMove, 2);
+    renderC4();
+    if (checkC4End()) return;
+    c4Current = 1;
+    c4Locked = false;
+    updateC4Status();
+  }, 250);
 }
 
 function bestC4Move(board, depth) {
@@ -349,7 +365,9 @@ function checkC4End() {
 }
 
 function updateC4Status() {
-  c4Status.textContent = 'Drop a piece to begin.';
+  if (evaluateC4(c4Board)) return;
+  c4Status.textContent =
+    c4Current === 1 && !c4Locked ? 'Your turn. Drop a piece.' : 'CPU thinking...';
 }
 
 document.querySelectorAll('[data-c4-level]').forEach((btn) => {
@@ -366,9 +384,13 @@ c4Reset.addEventListener('click', resetC4);
 
 function resetC4() {
   c4Board = Array.from({ length: C4_ROWS }, () => Array(C4_COLS).fill(0));
-  c4Current = 1;
-  c4Locked = false;
+  const playerStarts = Math.random() < 0.5;
+  c4Current = playerStarts ? 1 : 2;
+  c4Locked = c4Current === 2;
   renderC4();
+  if (c4Current === 2) {
+    queueC4AiMove();
+  }
 }
 
 // init
